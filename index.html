@@ -23,6 +23,7 @@
       background: radial-gradient(circle at top, var(--bg1), var(--bg2));
       color: var(--text);
       overflow: hidden;
+      padding: 18px;
     }
     .card {
       width: min(520px, 92vw);
@@ -35,6 +36,18 @@
       text-align: center;
       position: relative;
     }
+
+    /* Cute image at the top */
+    #topPic{
+      width: min(240px, 75vw);
+      height: auto;
+      display: block;
+      margin: 0 auto 14px;
+      border-radius: 18px;
+      box-shadow: 0 14px 30px rgba(0,0,0,0.18);
+      border: 1px solid rgba(255,255,255,0.6);
+    }
+
     h1 {
       margin: 0 0 10px;
       font-size: clamp(28px, 4vw, 38px);
@@ -59,7 +72,8 @@
       flex-wrap: wrap;
       margin-top: 18px;
       position: relative;
-      min-height: 64px;
+      min-height: 90px;
+      padding: 10px 0;
     }
 
     button {
@@ -72,15 +86,38 @@
       transition: transform 0.15s ease, filter 0.15s ease;
       box-shadow: 0 10px 22px rgba(0,0,0,0.12);
       user-select: none;
+      touch-action: manipulation;
     }
     button:hover { transform: translateY(-2px) scale(1.02); filter: brightness(1.03); }
     button:active { transform: translateY(0px) scale(0.98); }
 
-    #yesBtn { background: var(--yes); color: white; }
-    #noBtn {
+    /* YES: always bigger */
+    #yesBtn{
+      background: var(--yes);
+      color: white;
+      transform: scale(1.18);
+    }
+    #yesBtn:hover { transform: translateY(-2px) scale(1.22); }
+    #yesBtn:active { transform: translateY(0px) scale(1.15); }
+
+    /* NO: starts absolute so it can move around */
+    #noBtn{
       background: var(--no);
       color: white;
-      position: relative;
+      position: absolute;
+      left: 50%;
+      top: 0;
+      transform: translateX(-50%);
+      will-change: left, top, transform;
+    }
+
+    /* Little “dance” animation */
+    @keyframes jitterDance {
+      0%   { transform: translate(-50%, 0) rotate(0deg); }
+      25%  { transform: translate(-52%, -2px) rotate(-2deg); }
+      50%  { transform: translate(-48%,  2px) rotate(2deg); }
+      75%  { transform: translate(-51%,  1px) rotate(-1deg); }
+      100% { transform: translate(-50%, 0) rotate(0deg); }
     }
 
     .result {
@@ -160,6 +197,13 @@
   <div class="card">
     <div class="hearts" id="hearts"></div>
 
+    <!-- Cute image: replace src with your own file (e.g. cute.jpg) if you want -->
+    <img
+      id="topPic"
+      src="https://images.unsplash.com/photo-1518791841217-8f162f1e1131?auto=format&fit=crop&w=800&q=80"
+      alt="Cute picture"
+    />
+
     <h1 id="title">Will you be my Valentine? 💖</h1>
     <p id="subtitle">Choose wisely. The buttons have… feelings.</p>
 
@@ -180,7 +224,7 @@
       <div class="footer">If they still say no after this, it’s not the website’s fault.</div>
     </div>
 
-    <div class="hint">Tip: edit the text inside the HTML to use their name ✨</div>
+    <div class="hint">Tip: edit the title text to include their name ✨</div>
   </div>
 
   <script>
@@ -193,7 +237,6 @@
     const copyBtn = document.getElementById('copyBtn');
     const btnArea = document.getElementById('btnArea');
 
-    // Put the current URL in the input (useful once hosted)
     function updateLink() {
       pageLink.value = window.location.href;
     }
@@ -220,67 +263,98 @@
       }
     }
 
+    // YES: happy ending
     yesBtn.addEventListener('click', () => {
       result.textContent = "Correct answer. Obviously. 💍💖";
       popHearts(24);
 
       successBox.style.display = "block";
-      // Make "No" harmless after Yes
+
+      // Disable NO after YES
       noBtn.disabled = true;
       noBtn.style.opacity = 0.55;
+
+      // Stop the NO chaos
+      clearInterval(danceTimer);
+
       updateLink();
     });
 
-    // Make the "No" button dodge the cursor (desktop)
+    // --- NO button: always dancing + dodges hover/click + shrinks over time ---
     let dodgeCount = 0;
-    function dodge() {
-      dodgeCount++;
 
+    // Visual jitter dance
+    noBtn.style.animation = "jitterDance 0.18s infinite";
+
+    function randomWithin(areaRect, btnRect) {
+      const padding = 8;
+      const maxX = Math.max(padding, areaRect.width - btnRect.width - padding);
+      const maxY = Math.max(padding, 90 - btnRect.height);
+
+      const x = padding + Math.random() * (maxX - padding);
+      const y = -10 + Math.random() * (maxY + 10);
+
+      return { x, y };
+    }
+
+    function placeNoButtonRandomly() {
       const areaRect = btnArea.getBoundingClientRect();
       const btnRect = noBtn.getBoundingClientRect();
+      const { x, y } = randomWithin(areaRect, btnRect);
 
-      // Random position within the button area
-      const maxX = areaRect.width - btnRect.width;
-      const maxY = 64 - btnRect.height; // keeps it near the row
-      const x = Math.max(0, Math.min(maxX, Math.random() * maxX));
-      const y = Math.max(-10, Math.min(maxY, (Math.random() * 30) - 10));
-
-      noBtn.style.position = "absolute";
       noBtn.style.left = x + "px";
       noBtn.style.top = y + "px";
+    }
 
-      // Also: gradually shrink the No button
-      const scale = Math.max(0.6, 1 - dodgeCount * 0.07);
-      noBtn.style.transform = `scale(${scale})`;
+    // Always moving around a bit
+    const danceTimer = setInterval(() => {
+      if (!noBtn.disabled) placeNoButtonRandomly();
+    }, 450);
+
+    function dodgeHarder() {
+      if (noBtn.disabled) return;
+
+      dodgeCount++;
+
+      placeNoButtonRandomly();
+
+      // Shrink a bit each time (but don't vanish)
+      const scale = Math.max(0.45, 1 - dodgeCount * 0.08);
+
+      // Keep dance, add scaling (dance keyframes already translate -50%)
+      noBtn.style.transform = `translateX(-50%) scale(${scale})`;
 
       const lines = [
-        "No? Interesting choice.",
-        "The button refuses to cooperate.",
-        "Try again. With better vibes.",
-        "That 'No' seems unstable.",
-        "The universe says: reconsider."
+        "No? That button disagrees.",
+        "It’s running away again.",
+        "Try clicking Yes like a sane person.",
+        "The No button is allergic to commitment.",
+        "This is why we can’t have nice things."
       ];
       result.textContent = lines[Math.min(dodgeCount - 1, lines.length - 1)];
     }
 
-    noBtn.addEventListener('mouseenter', dodge);
-    noBtn.addEventListener('click', dodge);
+    noBtn.addEventListener('mouseenter', dodgeHarder);
+    noBtn.addEventListener('click', dodgeHarder);
 
+    // Start position once layout is ready
+    window.addEventListener("load", () => {
+      placeNoButtonRandomly();
+    });
+
+    // Copy link button
     copyBtn.addEventListener('click', async () => {
       try {
         await navigator.clipboard.writeText(pageLink.value);
         copyBtn.textContent = "Copied!";
         setTimeout(() => (copyBtn.textContent = "Copy"), 1200);
       } catch (e) {
-        // Clipboard can fail in some browsers
         pageLink.select();
         document.execCommand("copy");
         copyBtn.textContent = "Copied!";
         setTimeout(() => (copyBtn.textContent = "Copy"), 1200);
       }
     });
-
-    // Mobile: "mouseenter" doesn't exist, so keep click behavior
   </script>
 </body>
 </html>
