@@ -1,360 +1,219 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Valentine?</title>
-  <style>
-    :root {
-      --bg1: #ffdde1;
-      --bg2: #ee9ca7;
-      --card: rgba(255,255,255,0.75);
-      --text: #2b2b2b;
-      --yes: #22c55e;
-      --no: #ef4444;
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      min-height: 100vh;
-      display: grid;
-      place-items: center;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      background: radial-gradient(circle at top, var(--bg1), var(--bg2));
-      color: var(--text);
-      overflow: hidden;
-      padding: 18px;
-    }
-    .card {
-      width: min(520px, 92vw);
-      background: var(--card);
-      border: 1px solid rgba(255,255,255,0.55);
-      backdrop-filter: blur(10px);
-      border-radius: 24px;
-      padding: 28px 22px;
-      box-shadow: 0 18px 50px rgba(0,0,0,0.18);
-      text-align: center;
-      position: relative;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valentine?</title>
 
-    /* Cute image at the top */
-    #topPic{
-      width: min(240px, 75vw);
-      height: auto;
-      display: block;
-      margin: 0 auto 14px;
-      border-radius: 18px;
-      box-shadow: 0 14px 30px rgba(0,0,0,0.18);
-      border: 1px solid rgba(255,255,255,0.6);
-    }
+<style>
+:root{
+  --bg1:#ffdde1;
+  --bg2:#ee9ca7;
+  --yes:#22c55e;
+  --no:#ef4444;
+}
 
-    h1 {
-      margin: 0 0 10px;
-      font-size: clamp(28px, 4vw, 38px);
-      letter-spacing: -0.02em;
-    }
-    p {
-      margin: 0 0 18px;
-      font-size: 16px;
-      opacity: 0.9;
-    }
-    .hint {
-      font-size: 12px;
-      opacity: 0.65;
-      margin-top: 10px;
-    }
+*{box-sizing:border-box}
 
-    .buttons {
-      display: flex;
-      gap: 12px;
-      justify-content: center;
-      align-items: center;
-      flex-wrap: wrap;
-      margin-top: 18px;
-      position: relative;
-      min-height: 90px;
-      padding: 10px 0;
-    }
+body{
+  margin:0;
+  min-height:100vh;
+  display:grid;
+  place-items:center;
+  font-family:system-ui, sans-serif;
+  background:radial-gradient(circle at top, var(--bg1), var(--bg2));
+  overflow:hidden;
+}
 
-    button {
-      border: 0;
-      border-radius: 999px;
-      padding: 14px 22px;
-      font-weight: 700;
-      cursor: pointer;
-      font-size: 16px;
-      transition: transform 0.15s ease, filter 0.15s ease;
-      box-shadow: 0 10px 22px rgba(0,0,0,0.12);
-      user-select: none;
-      touch-action: manipulation;
-    }
-    button:hover { transform: translateY(-2px) scale(1.02); filter: brightness(1.03); }
-    button:active { transform: translateY(0px) scale(0.98); }
+/* FULL PAGE HEART RAIN */
+#rain{
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:999;
+}
 
-    /* YES: always bigger */
-    #yesBtn{
-      background: var(--yes);
-      color: white;
-      transform: scale(1.18);
-    }
-    #yesBtn:hover { transform: translateY(-2px) scale(1.22); }
-    #yesBtn:active { transform: translateY(0px) scale(1.15); }
+.rain-heart{
+  position:absolute;
+  top:-40px;
+  animation: fall linear forwards;
+  opacity:.9;
+}
 
-    /* NO: starts absolute so it can move around */
-    #noBtn{
-      background: var(--no);
-      color: white;
-      position: absolute;
-      left: 50%;
-      top: 0;
-      transform: translateX(-50%);
-      will-change: left, top, transform;
-    }
+@keyframes fall{
+  to{
+    transform:translateY(110vh) rotate(360deg);
+    opacity:0;
+  }
+}
 
-    /* Little “dance” animation */
-    @keyframes jitterDance {
-      0%   { transform: translate(-50%, 0) rotate(0deg); }
-      25%  { transform: translate(-52%, -2px) rotate(-2deg); }
-      50%  { transform: translate(-48%,  2px) rotate(2deg); }
-      75%  { transform: translate(-51%,  1px) rotate(-1deg); }
-      100% { transform: translate(-50%, 0) rotate(0deg); }
-    }
+/* BIGGER CARD */
+.card{
+  width:min(680px,95vw);
+  padding:40px 36px;
+  background:rgba(255,255,255,.78);
+  backdrop-filter:blur(12px);
+  border-radius:30px;
+  text-align:center;
+  box-shadow:0 25px 70px rgba(0,0,0,.25);
+  position:relative;
+}
 
-    .result {
-      margin-top: 18px;
-      font-size: 18px;
-      font-weight: 700;
-      min-height: 26px;
-    }
+#topPic{
+  width:min(300px,80vw);
+  border-radius:22px;
+  margin:0 auto 20px;
+  display:block;
+  box-shadow:0 18px 40px rgba(0,0,0,.25);
+}
 
-    .hearts {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      overflow: hidden;
-      border-radius: 24px;
-    }
-    .heart {
-      position: absolute;
-      font-size: 18px;
-      opacity: 0.9;
-      animation: floatUp 1.6s ease-in forwards;
-      filter: drop-shadow(0 6px 10px rgba(0,0,0,0.15));
-    }
-    @keyframes floatUp {
-      from { transform: translateY(20px) scale(0.8); opacity: 0.0; }
-      15% { opacity: 1; }
-      to { transform: translateY(-180px) scale(1.2); opacity: 0; }
-    }
+h1{
+  font-size:clamp(32px,4vw,44px);
+  margin-bottom:12px;
+}
 
-    .success {
-      display: none;
-      margin-top: 14px;
-      padding: 14px 14px;
-      border-radius: 16px;
-      background: rgba(34,197,94,0.12);
-      border: 1px solid rgba(34,197,94,0.25);
-    }
+p{
+  font-size:17px;
+  opacity:.85;
+}
 
-    .success h2 {
-      margin: 0 0 8px;
-      font-size: 20px;
-    }
+.buttons{
+  position:relative;
+  margin-top:28px;
+  height:120px;
+}
 
-    .copyRow {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 10px;
-      margin-top: 12px;
-    }
-    input {
-      width: 100%;
-      border-radius: 999px;
-      border: 1px solid rgba(0,0,0,0.12);
-      padding: 12px 14px;
-      font-size: 14px;
-      outline: none;
-      background: rgba(255,255,255,0.8);
-    }
-    .copyBtn {
-      background: #111827;
-      color: white;
-      border-radius: 999px;
-      padding: 12px 14px;
-      font-weight: 700;
-      font-size: 14px;
-      box-shadow: 0 10px 22px rgba(0,0,0,0.12);
-    }
+/* BUTTONS */
+button{
+  border:none;
+  border-radius:999px;
+  padding:18px 30px;
+  font-size:18px;
+  font-weight:800;
+  cursor:pointer;
+  box-shadow:0 14px 28px rgba(0,0,0,.2);
+}
 
-    .footer {
-      margin-top: 12px;
-      font-size: 12px;
-      opacity: 0.65;
-    }
-  </style>
+/* YES IS HUGE */
+#yesBtn{
+  background:var(--yes);
+  color:white;
+  transform:scale(1.45);
+}
+#yesBtn:hover{transform:scale(1.55)}
+#yesBtn:active{transform:scale(1.4)}
+
+/* NO IS CHAOS */
+#noBtn{
+  background:var(--no);
+  color:white;
+  position:absolute;
+  left:50%;
+  top:0;
+  transform:translateX(-50%);
+  animation:jitter .18s infinite;
+}
+
+@keyframes jitter{
+  0%{transform:translate(-50%,0)}
+  25%{transform:translate(-54%,-2px)}
+  50%{transform:translate(-46%,2px)}
+  75%{transform:translate(-52%,1px)}
+  100%{transform:translate(-50%,0)}
+}
+
+.result{
+  margin-top:24px;
+  font-size:20px;
+  font-weight:700;
+  min-height:28px;
+}
+</style>
 </head>
+
 <body>
-  <div class="card">
-    <div class="hearts" id="hearts"></div>
 
-    <!-- Cute image: replace src with your own file (e.g. cute.jpg) if you want -->
-    <img
-      id="topPic"
-      src="https://images.unsplash.com/photo-1518791841217-8f162f1e1131?auto=format&fit=crop&w=800&q=80"
-      alt="Cute picture"
-    />
+<div id="rain"></div>
 
-    <h1 id="title">Will you be my Valentine? 💖</h1>
-    <p id="subtitle">Choose wisely. The buttons have… feelings.</p>
+<div class="card">
+  <img id="topPic"
+    src="https://images.unsplash.com/photo-1518791841217-8f162f1e1131?auto=format&fit=crop&w=900&q=80"
+    alt="cute">
 
-    <div class="buttons" id="btnArea">
-      <button id="yesBtn">Yes ✅</button>
-      <button id="noBtn">No ❌</button>
-    </div>
+  <h1>Grace?? Will you be my Valentine??? 💖</h1>
+  <p>There is technically a choice.</p>
 
-    <div class="result" id="result"></div>
-
-    <div class="success" id="successBox">
-      <h2>YAY! 🥳💘</h2>
-      <div>Screenshot this moment or copy this page link to share:</div>
-      <div class="copyRow">
-        <input id="pageLink" readonly />
-        <button class="copyBtn" id="copyBtn">Copy</button>
-      </div>
-      <div class="footer">If they still say no after this, it’s not the website’s fault.</div>
-    </div>
-
-    <div class="hint">Tip: edit the title text to include their name ✨</div>
+  <div class="buttons" id="btnArea">
+    <button id="yesBtn">YES 💘</button>
+    <button id="noBtn">NO ❌</button>
   </div>
 
-  <script>
-    const yesBtn = document.getElementById('yesBtn');
-    const noBtn = document.getElementById('noBtn');
-    const result = document.getElementById('result');
-    const hearts = document.getElementById('hearts');
-    const successBox = document.getElementById('successBox');
-    const pageLink = document.getElementById('pageLink');
-    const copyBtn = document.getElementById('copyBtn');
-    const btnArea = document.getElementById('btnArea');
+  <div class="result" id="result"></div>
+</div>
 
-    function updateLink() {
-      pageLink.value = window.location.href;
-    }
-    updateLink();
+<script>
+const yesBtn=document.getElementById("yesBtn");
+const noBtn=document.getElementById("noBtn");
+const btnArea=document.getElementById("btnArea");
+const result=document.getElementById("result");
+const rain=document.getElementById("rain");
 
-    function popHearts(count = 14) {
-      const emojis = ["💖","💘","💝","💕","💗","💓","💞"];
-      const rect = document.querySelector('.card').getBoundingClientRect();
+let dodgeCount=0;
 
-      for (let i = 0; i < count; i++) {
-        const el = document.createElement('div');
-        el.className = 'heart';
-        el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+/* MOVE NO AROUND */
+function moveNo(){
+  const area=btnArea.getBoundingClientRect();
+  const btn=noBtn.getBoundingClientRect();
+  const x=Math.random()*(area.width-btn.width);
+  const y=Math.random()*(area.height-btn.height);
+  noBtn.style.left=x+"px";
+  noBtn.style.top=y+"px";
+}
 
-        const x = Math.random() * (rect.width - 20);
-        const y = rect.height - 60 + Math.random() * 30;
-        el.style.left = x + "px";
-        el.style.top = y + "px";
-        el.style.fontSize = (14 + Math.random() * 18) + "px";
-        el.style.animationDuration = (1.2 + Math.random() * 1.2) + "s";
+setInterval(()=>{ if(!noBtn.disabled) moveNo(); },450);
 
-        hearts.appendChild(el);
-        setTimeout(() => el.remove(), 2200);
-      }
-    }
+function dodge(){
+  dodgeCount++;
+  moveNo();
+  const scale=Math.max(.45,1-dodgeCount*.08);
+  noBtn.style.transform=`translateX(-50%) scale(${scale})`;
+  result.textContent=[
+    "No is unavailable.",
+    "Still no? Interesting.",
+    "The button refuses.",
+    "Commitment detected. Abort.",
+    "This is getting embarrassing."
+  ][Math.min(dodgeCount-1,4)];
+}
 
-    // YES: happy ending
-    yesBtn.addEventListener('click', () => {
-      result.textContent = "Correct answer. Obviously. 💍💖";
-      popHearts(24);
+noBtn.addEventListener("mouseenter",dodge);
+noBtn.addEventListener("click",dodge);
 
-      successBox.style.display = "block";
+/* HEART RAIN */
+function heartRain(){
+  const hearts=["💖","💘","💝","💕","💗","💓","💞","❤️"];
+  const interval=setInterval(()=>{
+    const h=document.createElement("div");
+    h.className="rain-heart";
+    h.textContent=hearts[Math.floor(Math.random()*hearts.length)];
+    h.style.left=Math.random()*100+"vw";
+    h.style.fontSize=16+Math.random()*26+"px";
+    h.style.animationDuration=2+Math.random()*3+"s";
+    rain.appendChild(h);
+    setTimeout(()=>h.remove(),6000);
+  },120);
 
-      // Disable NO after YES
-      noBtn.disabled = true;
-      noBtn.style.opacity = 0.55;
+  setTimeout(()=>clearInterval(interval),4500);
+}
 
-      // Stop the NO chaos
-      clearInterval(danceTimer);
+/* YES CLICK */
+yesBtn.addEventListener("click",()=>{
+  result.textContent="Correct answer. Obviously. 💍💖";
+  noBtn.disabled=true;
+  noBtn.style.opacity=.4;
+  heartRain();
+});
+</script>
 
-      updateLink();
-    });
-
-    // --- NO button: always dancing + dodges hover/click + shrinks over time ---
-    let dodgeCount = 0;
-
-    // Visual jitter dance
-    noBtn.style.animation = "jitterDance 0.18s infinite";
-
-    function randomWithin(areaRect, btnRect) {
-      const padding = 8;
-      const maxX = Math.max(padding, areaRect.width - btnRect.width - padding);
-      const maxY = Math.max(padding, 90 - btnRect.height);
-
-      const x = padding + Math.random() * (maxX - padding);
-      const y = -10 + Math.random() * (maxY + 10);
-
-      return { x, y };
-    }
-
-    function placeNoButtonRandomly() {
-      const areaRect = btnArea.getBoundingClientRect();
-      const btnRect = noBtn.getBoundingClientRect();
-      const { x, y } = randomWithin(areaRect, btnRect);
-
-      noBtn.style.left = x + "px";
-      noBtn.style.top = y + "px";
-    }
-
-    // Always moving around a bit
-    const danceTimer = setInterval(() => {
-      if (!noBtn.disabled) placeNoButtonRandomly();
-    }, 450);
-
-    function dodgeHarder() {
-      if (noBtn.disabled) return;
-
-      dodgeCount++;
-
-      placeNoButtonRandomly();
-
-      // Shrink a bit each time (but don't vanish)
-      const scale = Math.max(0.45, 1 - dodgeCount * 0.08);
-
-      // Keep dance, add scaling (dance keyframes already translate -50%)
-      noBtn.style.transform = `translateX(-50%) scale(${scale})`;
-
-      const lines = [
-        "No? That button disagrees.",
-        "It’s running away again.",
-        "Try clicking Yes like a sane person.",
-        "The No button is allergic to commitment.",
-        "This is why we can’t have nice things."
-      ];
-      result.textContent = lines[Math.min(dodgeCount - 1, lines.length - 1)];
-    }
-
-    noBtn.addEventListener('mouseenter', dodgeHarder);
-    noBtn.addEventListener('click', dodgeHarder);
-
-    // Start position once layout is ready
-    window.addEventListener("load", () => {
-      placeNoButtonRandomly();
-    });
-
-    // Copy link button
-    copyBtn.addEventListener('click', async () => {
-      try {
-        await navigator.clipboard.writeText(pageLink.value);
-        copyBtn.textContent = "Copied!";
-        setTimeout(() => (copyBtn.textContent = "Copy"), 1200);
-      } catch (e) {
-        pageLink.select();
-        document.execCommand("copy");
-        copyBtn.textContent = "Copied!";
-        setTimeout(() => (copyBtn.textContent = "Copy"), 1200);
-      }
-    });
-  </script>
 </body>
 </html>
